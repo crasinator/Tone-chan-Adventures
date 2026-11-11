@@ -67,6 +67,7 @@
       height: auto !important;
       overflow: hidden !important;
       border: 1px solid #44485a;
+      border-bottom: 0;
       border-radius: 12px 12px 0 0;
       background: #08090d;
     }
@@ -80,6 +81,38 @@
       left: 0 !important;
       width: 100% !important;
       height: 100% !important;
+    }
+
+    /* Touch controls sit in the old menu slot, under the picture.
+       Their pieces are positioned from the bottom of this box, so the
+       box needs a real height or iOS collapses it. */
+    #game .ejs_virtualGamepad_parent {
+      position: relative !important;
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      pointer-events: auto !important;
+      width: 100% !important;
+      height: 196px !important;
+      max-height: none !important;
+      margin: 0 !important;
+      top: auto !important;
+      right: auto !important;
+      bottom: auto !important;
+      left: auto !important;
+      -webkit-transform: none !important;
+      transform: none !important;
+      z-index: 3;
+      overflow: hidden;
+      box-sizing: border-box !important;
+      background: #12141c !important;
+      border-left: 1px solid #44485a;
+      border-right: 1px solid #44485a;
+    }
+
+    /* The corner control that used to open this pad over the picture. */
+    #game .ejs_virtualGamepad_open {
+      display: none !important;
     }
 
     /* The start button is a sibling of the picture, so pull it
@@ -149,17 +182,33 @@
   </script>
   <script src="https://cdn.emulatorjs.org/stable/data/loader.js"></script>
   <script>
-    // EmulatorJS places the start button after the toolbar. Park it
-    // inside the picture so the toolbar can sit underneath.
+    // Put the on-screen controls under the picture, and the
+    // restart/volume menu under those controls. The start button
+    // stays inside the picture.
     (function () {
       const root = document.querySelector("#game");
-      const park = () => {
+      const layout = () => {
         const frame = root.querySelector(".ejs_game");
         const button = root.querySelector(".ejs_start_button");
         if (frame && button && button.parentElement !== frame) frame.appendChild(button);
+
+        const picture = root.querySelector(".ejs_canvas_parent") || frame;
+        const pad = root.querySelector(".ejs_virtualGamepad_parent");
+        const bar = root.querySelector(".ejs_menu_bar");
+        if (!pad || !picture) return;
+        if (pad.hidden) pad.hidden = false;
+        if (pad.previousElementSibling === picture) return;
+        if (bar && bar.parentElement === root) root.insertBefore(pad, bar);
+        else picture.insertAdjacentElement("afterend", pad);
       };
-      new MutationObserver(park).observe(root, { childList: true, subtree: true });
-      park();
+      const observer = new MutationObserver(() => {
+        observer.disconnect();
+        try { layout(); } finally {
+          observer.observe(root, { childList: true, subtree: true });
+        }
+      });
+      observer.observe(root, { childList: true, subtree: true });
+      layout();
     })();
   </script>
 </body>
