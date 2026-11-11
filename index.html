@@ -177,8 +177,11 @@
     EJS_player = "#game";
     EJS_core = "gb";
     EJS_gameName = "Tone-chan Adventures";
-    EJS_gameUrl = new URL("Tone-chan Adventures v.3.5.0.gbc", window.location.href).href;
+    // New address each visit, so a bad saved copy of the ROM is not reused.
+    EJS_gameUrl = new URL("Tone-chan Adventures v.3.5.0.gbc", window.location.href).href + "?fresh=" + Date.now();
     EJS_pathtodata = "https://cdn.emulatorjs.org/stable/data/";
+    // Reboot the cart once, a second after the core starts.
+    EJS_softLoad = 1;
   </script>
   <script src="https://cdn.emulatorjs.org/stable/data/loader.js"></script>
   <script>
